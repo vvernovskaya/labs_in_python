@@ -178,7 +178,7 @@ def make_diagram_lsxy(x_data, y_data, title, x_label, y_label):
     ax.set_ylim(ymin=min(y_data) - abs(max(y_data) - min(y_data))*0.1,
                 ymax=max(y_data) + abs(max(y_data) - min(y_data))*0.1)
 
-    x = np.linspace(0, 10, 1000)
+    x = np.linspace(0, max(x_data), 1000)
     ax.plot(x, calc_b(x_data, y_data) * x + calc_a(x_data, y_data),
             'r--')
 
@@ -201,7 +201,7 @@ def make_diagram_lsxy_errorbar(x_data, y_data, err_data, title, x_label,
     ax.set_ylim(ymin=min(y_data) - abs(max(y_data) - min(y_data)) * 0.1,
                 ymax=max(y_data) + abs(max(y_data) - min(y_data)) * 0.1)
 
-    x = np.linspace(0, 10, 1000)
+    x = np.linspace(0, max(x_data), 1000)
     ax.plot(x, calc_b(x_data, y_data) * x +
             calc_a(x_data, y_data), 'r--')
 
@@ -226,7 +226,7 @@ def make_diagram_chi_square(x_data, y_data, err_data, title, x_label, y_label):
     ax.set_ylim(ymin=min(y_data) - abs(max(y_data) - min(y_data)) * 0.1,
                 ymax=max(y_data) + abs(max(y_data) - min(y_data)) * 0.1)
 
-    x = np.linspace(0, 10, 1000)
+    x = np.linspace(0, max(x_data), 1000)
     ax.plot(x, calc_b_chi_square(x_data, y_data) * x +
             calc_a_chi_square(x_data, y_data), 'r--')
 

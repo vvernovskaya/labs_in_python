@@ -3,8 +3,11 @@ import math
 import numpy as np
 import pandas as pd
 
-# y = a + b * x -- linear model
-# method argument can be either "lsxy" (least square minimization), or "chi_square" (chi-square minimization)
+'''
+table is the name of an excel table (example: 'table.xlsx'); sheet is the
+name of the sheet (example: 'Лист1'); column_num is the number of column
+to be extracted into an array: A = 0, B = 1 ...
+'''
 
 
 def extract_data_into_array(table, sheet, column_num):
@@ -14,31 +17,48 @@ def extract_data_into_array(table, sheet, column_num):
 
 
 def calc_avg_error(*columns):
-    n = 0
-    col_size = 0
-    for column in columns:
-        n += 1
-        col_size = len(column)
+    if len(columns) == 1:  # if the data for same conditions in one column
+        data = columns[0]
+        data_avg = sum(data) / len(data)
 
-    err_list = []
-    avg_list = []
+        # difference between each element from data and data average
+        sum_each_avg_diff_2 = 0
+        for i in range(len(data)):
+            sum_each_avg_diff_2 += (data[i] - data_avg) ** 2
 
-    for i in range(col_size):
+        n = len(data)
+        return math.sqrt((1 / (n * (n - 1)) * sum_each_avg_diff_2))
+
+    else:
+        n = 0  # if the data for the same conditions is in lines
+        col_size = 0
         for column in columns:
-            print(i)
-            avg_list[i] += column[i]
+            n += 1
+            col_size = len(column)
 
-        avg_list[i] /= n
+        err_list = []
+        avg_list = []
 
-        for column in columns:
-            err_list[i] += (column[i] - avg_list[i]) ** 2
+        for i in range(col_size):
+            for column in columns:
+                print(i)
+                avg_list[i] += column[i]
 
-        err_list[i] = math.sqrt(1 / (n*(n-1)) * err_list[i])
+            avg_list[i] /= n
 
-    return err_list
+            for column in columns:
+                err_list[i] += (column[i] - avg_list[i]) ** 2
+
+            err_list[i] = math.sqrt(1 / (n*(n-1)) * err_list[i])
+
+        return err_list
 
 
-class Plot:
+# y = a + b * x -- linear model
+# method argument can be either "lsxy" (least square minimization), or "chi_square" (chi-square minimization)
+
+
+class Lab:
     def __init__(self, method, x_data, y_data, error_bar_x=None, error_bar_y=None, title=None,
                  x_label=None, y_label=None):
         self.fig, self.ax = plt.subplots(figsize=(8, 8))
@@ -118,8 +138,6 @@ class Plot:
         x2_avg = sum_x2 / len(self.x_data)
 
         return self.b_error * (math.sqrt(x2_avg - x_avg ** 2))
-
-
 
     def show_diagram(self):
         self.ax.scatter(x=self.x_data, y=self.y_data, marker='o', c='purple', edgecolor='b')

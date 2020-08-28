@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 import pandas as pd
+import scipy.optimize as opt
 
 '''
 table is the name of an excel table (example: 'table.xlsx'); sheet is the
@@ -17,7 +18,7 @@ def extract_data_into_array(table, sheet, column_num):
 
 
 def calc_avg_error(*columns):
-    if len(columns) == 1:  # if the data for same conditions in one column
+    if len(columns) == 1:  # if the data for same conditions is in one column
         data = columns[0]
         data_avg = sum(data) / len(data)
 
@@ -53,7 +54,6 @@ def calc_avg_error(*columns):
 
         return err_list
 
-
 # y = a + b * x -- linear model
 # method argument can be either "lsxy" (least square minimization), or "chi_square" (chi-square minimization)
 
@@ -79,9 +79,16 @@ class Lab:
         self.calc_b_error()
         self.calc_a_error()
 
+    def chi_square(self, a, b):
+        model = a + b * self.y_data
+        chi_square = np.sum(((self.y_data - model) / self.error_bar_y) ** 2)
+        return chi_square
+
     def calc_b(self):
         if self.method == "chi_square":
-            pass  # FIX_THIS
+            x0 = np.array([0, 0])
+            result = opt.minimize(self.chi_square, x0)
+            a, b = result.x
 
         elif self.method == "lsxy":
             sum_xy = 0
@@ -100,9 +107,12 @@ class Lab:
 
             self.b = (xy_avg - x_avg * y_avg) / (x2_avg - x_avg ** 2)
 
+        else:
+            print("Method parameter should be either chi_square, or lsxy")  # MAKE AN EXCEPTION OUT OF THIS
+
     def calc_a(self):
         if self.method == "chi_square":
-            pass  # FIX_THIS
+            return
 
         elif self.method == "lsxy":
             x_avg = sum(self.x_data) / len(self.x_data)

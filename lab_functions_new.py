@@ -61,7 +61,8 @@ def calc_avg_error(*columns):
 class Lab:
     def __init__(self, method, x_data, y_data, error_bar_x=None, error_bar_y=None, title=None,
                  x_label=None, y_label=None):
-        self.fig, self.ax = plt.subplots(figsize=(8, 8))
+        self.fig, self.ax = plt.subplots(figsize=(6, 6))
+        self.x = None
         self.method = method
         self.x_data = x_data
         self.y_data = y_data
@@ -74,21 +75,28 @@ class Lab:
         self.a = None
         self.calc_b()
         self.calc_a()
-        self.b_error = None
-        self.a_error = None
-        self.calc_b_error()
-        self.calc_a_error()
+        #self.b_error = None
+        self.b_error = self.calc_b_error()
+        #self.a_error = None
+        self.a_error = self.calc_a_error()
+        self.make_diagram()
 
-    def chi_square(self, a, b):
-        model = a + b * self.y_data
-        chi_square = np.sum(((self.y_data - model) / self.error_bar_y) ** 2)
+    def chi_square(self, tup):
+        y_data_div = np.array(self.y_data)
+        y_data_err_div = np.array(self.error_bar_y)
+        y_data_max = max(self.y_data)
+        y_data_div = y_data_div/y_data_max
+        y_data_err_div = y_data_err_div/y_data_max
+        a, b = tup
+        model = a + b * y_data_div
+        chi_square = np.sum(((y_data_div - model) / y_data_err_div) ** 2)
         return chi_square
 
     def calc_b(self):
         if self.method == "chi_square":
             x0 = np.array([0, 0])
             result = opt.minimize(self.chi_square, x0)
-            a, b = result.x
+            self.a, self.b = result.x * max(self.y_data)
 
         elif self.method == "lsxy":
             sum_xy = 0
@@ -149,7 +157,7 @@ class Lab:
 
         return self.b_error * (math.sqrt(x2_avg - x_avg ** 2))
 
-    def show_diagram(self):
+    def make_diagram(self):
         self.ax.scatter(x=self.x_data, y=self.y_data, marker='o', c='purple', edgecolor='b')
         self.ax.set_title(self.title)
         self.ax.set_xlabel(self.x_label)
@@ -159,12 +167,22 @@ class Lab:
         self.ax.set_ylim(ymin=min(self.y_data) - abs(max(self.y_data) - min(self.y_data)) * 0.1,
                     ymax=max(self.y_data) + abs(max(self.y_data) - min(self.y_data)) * 0.1)
 
-        x = np.linspace(0, max(self.x_data), 1000)
-        self.ax.plot(x, self.b * x + self.a, 'r--')
+        #self.ax.set_xlim(0,
+        #xmax=max(self.x_data) + abs(max(self.x_data) - min(self.x_data)) * 0.1)
+        #self.ax.set_ylim(0,
+        #ymax=max(self.y_data) + abs(max(self.y_data) - min(self.y_data)) * 0.1)
 
-        plt.errorbar(self.x_data, self.y_data, xerr=self.error_bar_x, yerr=self.error_bar_y, fmt='o', ecolor='black',
-                     capsize=5, color='red', mec='b', mew=1)
+        self.x = np.linspace(min(self.x_data), max(self.x_data), 1000)
+        self.ax.plot(self.x, self.b * self.x + self.a, 'r--')
+
+        self.ax.errorbar(self.x_data, self.y_data, xerr=self.error_bar_x, yerr=self.error_bar_y, fmt='o', ecolor='black',
+                    capsize=5, color='red', mec='b', mew=1)
+
+        #plt.xticks(np.arange(0, 13, step=1))
+        #plt.yticks(np.arange(0, 2.5, step=0.1))
 
         self.fig.tight_layout()
 
-        return plt.show()
+
+def show_all():
+    plt.show()
